@@ -26,7 +26,7 @@ export function OfflineBanner({ onSynced }: OfflineBannerProps) {
       const count = await flushOfflineQueue();
       setQueuedCount(getQueuedReports().length);
       if (count > 0) {
-        setSyncMessage(`Synced ${count} offline report(s) to the live ledger.`);
+        setSyncMessage(`Synced ${count} offline alert(s) to the live feed.`);
         onSynced();
         setTimeout(() => setSyncMessage(null), 5000);
       }
@@ -48,26 +48,23 @@ export function OfflineBanner({ onSynced }: OfflineBannerProps) {
   if (isOnline && queuedCount === 0 && !syncMessage) return null;
 
   return (
-    <div className="mb-5 rounded-xl border border-amber-500/40 bg-amber-950/50 px-4 py-3 text-sm text-amber-100">
+    <div className="mb-4 rounded-xl border-2 border-amber-500 bg-amber-950 px-4 py-3 text-sm font-medium text-amber-100">
       {!isOnline ? (
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5">
-            <WifiOff className="h-4 w-4 shrink-0 text-amber-400" />
-            <span>
-              <strong>Offline Mesh Mode:</strong> Reports you submit are saved
-              locally ({queuedCount} queued) and will auto-broadcast when signal
-              returns.
-            </span>
-          </div>
+        <div className="flex items-center gap-2.5">
+          <WifiOff className="h-5 w-5 shrink-0 text-amber-400" />
+          <span>
+            Offline Mode ({queuedCount} queued) — Alerts save on your device
+            and auto-send when signal returns.
+          </span>
         </div>
       ) : syncMessage ? (
         <div className="flex items-center gap-2.5 text-emerald-300">
-          <CheckCircle2 className="h-4 w-4 shrink-0" />
+          <CheckCircle2 className="h-5 w-5 shrink-0" />
           <span>{syncMessage}</span>
         </div>
       ) : (
         <div className="flex items-center justify-between gap-3">
-          <span>{queuedCount} offline report(s) waiting to sync.</span>
+          <span>{queuedCount} offline alert(s) waiting to send.</span>
           <button
             type="button"
             onClick={async () => {
@@ -75,7 +72,7 @@ export function OfflineBanner({ onSynced }: OfflineBannerProps) {
               setQueuedCount(getQueuedReports().length);
               onSynced();
             }}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-amber-500/20 px-3 py-1 text-xs font-medium text-amber-200 hover:bg-amber-500/30"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-bold text-zinc-950"
           >
             <RefreshCw className="h-3.5 w-3.5" />
             Sync Now

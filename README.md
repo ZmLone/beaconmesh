@@ -1,11 +1,11 @@
-# BeaconMesh v2 — Civic & Emergency Mutual Aid Ledger
+# BeaconMesh v3 — High-Stress Emergency Mutual Aid UI
 
-Offline-first, community-verified neighborhood coordination for emergency medical, water, shelter, and road hazard alerts.
+Calm, distraction-free, high-contrast neighborhood emergency ledger built for mobile devices during blackouts, floods, earthquakes, and local crises.
 
-## New in v2
-- Automatic support for both `KV_REST_API_URL` / `KV_REST_API_TOKEN` and `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN`
-- One-tap Emergency Presets (zero typing under stress)
-- Google Maps "Get Directions" links on every active alert
-- "Mark Resolved" button to close fulfilled needs immediately
-- Incoming Low-Bandwidth SMS/WhatsApp link decoder (`/?b=...`)
-- Interactive 10-second onboarding guide + PWA "Install App" prompt
+## New in v3
+- **2-Tab Mobile-First Layout:** Switch cleanly between `Live Nearby Feed` and `+ Post Alert` without scrolling past long forms.
+- **3-Step Guided Alert Flow:** Step 1 (Need vs Offer + Category Tile) -> Step 2 (Auto-GPS Lock) -> Step 3 (Headline, Landmark, Phone & Broadcast).
+- **Urgent Dispatch Pinned Strip:** Critical life-safety alerts stay pinned at the top of the feed.
+- **One-Tap Call & Directions:** Automatically extracts phone numbers into direct `tel:` Call buttons alongside Google Maps Directions.
+- **High-Contrast Daylight / Night Mode:** Switch between sunlight-readable white/black high-contrast mode and low-glare dark mode.
+- **Clean Header + `?` Info Modal:** Technical badges moved to a subtle footer status dot so citizens only see life-safety actions.

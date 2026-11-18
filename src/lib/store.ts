@@ -136,7 +136,6 @@ export async function markReportResolved(
       ...report,
       resolved: true
     };
-    // Keep resolved badge visible for 30 minutes so responders know it is closed, then expire
     await redis.set(key, updated, { ex: 1800 });
     return updated;
   }

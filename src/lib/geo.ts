@@ -35,3 +35,11 @@ export function buildDirectionsUrl(lat: number, lng: number): string {
     `${lat},${lng}`
   )}`;
 }
+
+export function extractDialablePhone(contact: string): string | null {
+  if (!contact) return null;
+  const match = contact.match(/(\+?[0-9][0-9\s\-().]{5,}[0-9])/);
+  if (!match) return null;
+  const cleaned = match[1].replace(/[\s\-().]/g, "");
+  return cleaned.length >= 7 ? cleaned : null;
+}

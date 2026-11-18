@@ -2,9 +2,9 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "BeaconMesh — Civic & Emergency Mutual Aid Ledger",
+  title: "BeaconMesh — Emergency Mutual Aid Ledger",
   description:
-    "Offline-first, community-verified neighborhood ledger for emergency resources, blood donors, clean water, shelter, and road hazards.",
+    "High-contrast, offline-first neighborhood ledger for urgent medical, water, shelter, and road hazard alerts.",
   manifest: "/manifest.json"
 };
 
