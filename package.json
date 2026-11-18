@@ -1,6 +1,6 @@
 {
   "name": "beaconmesh",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@upstash/redis": "^1.34.3",
+    "@vercel/analytics": "^1.5.0",
     "lucide-react": "^0.468.0",
     "next": "^16.4.6",
     "qrcode": "^1.5.4",
