@@ -161,3 +161,23 @@ export async function appendReportUpdate(
     updates: [...current.updates.slice(-19), newUpdate]
   }));
 }
+
+// Backward-compatible helpers so legacy v3 verify/resolve routes compile cleanly
+export async function incrementVerification(
+  id: string
+): Promise<BeaconReport | null> {
+  return mutateReport(id, (cur) => ({
+    ...cur,
+    verifications: cur.verifications + 1
+  }));
+}
+
+export async function markReportResolved(
+  id: string
+): Promise<BeaconReport | null> {
+  return mutateReport(id, (cur) => ({
+    ...cur,
+    resolved: true,
+    expiresAt: Math.min(cur.expiresAt, Date.now() + 30 * 60 * 1000)
+  }));
+}
