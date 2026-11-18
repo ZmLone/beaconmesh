@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { Radio, LocateFixed, RefreshCw, Database } from "lucide-react";
 import { OfflineBanner } from "@/components/OfflineBanner";
+import { OnboardingGuide } from "@/components/OnboardingGuide";
+import { SmsDecodedBanner } from "@/components/SmsDecodedBanner";
 import { ReportForm } from "@/components/ReportForm";
 import { FeedList } from "@/components/FeedList";
 import type { BeaconReport } from "@/types/beacon";
@@ -66,7 +68,7 @@ export default function HomePage() {
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
-      <header className="mb-6 flex flex-col justify-between gap-4 border-b border-zinc-800 pb-5 sm:flex-row sm:items-center">
+      <header className="mb-5 flex flex-col justify-between gap-4 border-b border-zinc-800 pb-5 sm:flex-row sm:items-center">
         <div>
           <div className="flex items-center gap-2.5">
             <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-red-600 text-white">
@@ -104,6 +106,8 @@ export default function HomePage() {
       </header>
 
       <OfflineBanner onSynced={fetchReports} />
+      <SmsDecodedBanner />
+      <OnboardingGuide />
 
       <div className="grid gap-6 lg:grid-cols-12">
         <section className="lg:col-span-5">
@@ -169,7 +173,7 @@ export default function HomePage() {
           <FeedList
             reports={reports}
             loading={loading}
-            onVerified={(updated) =>
+            onUpdated={(updated) =>
               setReports((prev) =>
                 prev.map((item) => (item.id === updated.id ? updated : item))
               )

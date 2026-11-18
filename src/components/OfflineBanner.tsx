@@ -48,7 +48,7 @@ export function OfflineBanner({ onSynced }: OfflineBannerProps) {
   if (isOnline && queuedCount === 0 && !syncMessage) return null;
 
   return (
-    <div className="mb-6 rounded-xl border border-amber-500/40 bg-amber-950/50 px-4 py-3 text-sm text-amber-100">
+    <div className="mb-5 rounded-xl border border-amber-500/40 bg-amber-950/50 px-4 py-3 text-sm text-amber-100">
       {!isOnline ? (
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">

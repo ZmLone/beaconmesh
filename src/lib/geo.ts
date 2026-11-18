@@ -29,3 +29,9 @@ export function isValidCoordinate(lat: number, lng: number): boolean {
     lng <= 180
   );
 }
+
+export function buildDirectionsUrl(lat: number, lng: number): string {
+  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+    `${lat},${lng}`
+  )}`;
+}

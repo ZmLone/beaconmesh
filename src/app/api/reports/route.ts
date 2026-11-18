@@ -59,6 +59,9 @@ export async function GET(request: NextRequest) {
       }))
       .filter((r) => (r.distanceKm ?? 0) <= radiusKm)
       .sort((a, b) => {
+        if (Boolean(a.resolved) !== Boolean(b.resolved)) {
+          return a.resolved ? 1 : -1;
+        }
         if (b.verifications !== a.verifications) {
           return b.verifications - a.verifications;
         }
@@ -66,6 +69,9 @@ export async function GET(request: NextRequest) {
       });
   } else {
     reports.sort((a, b) => {
+      if (Boolean(a.resolved) !== Boolean(b.resolved)) {
+        return a.resolved ? 1 : -1;
+      }
       if (b.verifications !== a.verifications) {
         return b.verifications - a.verifications;
       }
@@ -142,6 +148,7 @@ export async function POST(request: NextRequest) {
       createdAt: now,
       expiresAt: now + ttlHours * 60 * 60 * 1000,
       verifications: 1,
+      resolved: false,
       powNonce: String(body.powNonce),
       powHash: powCheck.hash
     };

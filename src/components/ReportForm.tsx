@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { LocateFixed, ShieldCheck, Send, Loader2 } from "lucide-react";
+import { LocateFixed, ShieldCheck, Send, Loader2, Zap } from "lucide-react";
 import { mineProofOfWork } from "@/lib/pow";
 import { enqueueReport } from "@/lib/offlineQueue";
 import type {
@@ -16,6 +16,43 @@ interface ReportFormProps {
   onRequestLocation: () => void;
   onCreated: () => void;
 }
+
+const QUICK_PRESETS: Array<{
+  label: string;
+  kind: ReportKind;
+  category: ReportCategory;
+  urgency: UrgencyLevel;
+  title: string;
+}> = [
+  {
+    label: "Need Drinking Water",
+    kind: "need",
+    category: "water_food",
+    urgency: "high",
+    title: "Urgent: Need clean drinking water & basic rations"
+  },
+  {
+    label: "Medical / Blood Urgent",
+    kind: "need",
+    category: "medical",
+    urgency: "critical",
+    title: "Critical: Need urgent medical assistance / blood donor"
+  },
+  {
+    label: "Road Blocked",
+    kind: "need",
+    category: "hazard",
+    urgency: "high",
+    title: "Hazard Alert: Main access road blocked / unsafe to pass"
+  },
+  {
+    label: "Free Charging & Shelter",
+    kind: "offer",
+    category: "shelter",
+    urgency: "moderate",
+    title: "Offer: Backup power charging & dry shelter available"
+  }
+];
 
 export function ReportForm({
   userCoords,
@@ -38,11 +75,25 @@ export function ReportForm({
   const effectiveLat = userCoords ? userCoords.lat : Number(manualLat);
   const effectiveLng = userCoords ? userCoords.lng : Number(manualLng);
 
+  function applyPreset(preset: (typeof QUICK_PRESETS)[number]) {
+    setKind(preset.kind);
+    setCategory(preset.category);
+    setUrgency(preset.urgency);
+    setTitle(preset.title);
+    if (!userCoords) {
+      onRequestLocation();
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setFeedback(null);
 
-    if (!Number.isFinite(effectiveLat) || !Number.isFinite(effectiveLng) || (effectiveLat === 0 && effectiveLng === 0)) {
+    if (
+      !Number.isFinite(effectiveLat) ||
+      !Number.isFinite(effectiveLng) ||
+      (effectiveLat === 0 && effectiveLng === 0)
+    ) {
       setFeedback("Please lock your GPS location or enter valid coordinates.");
       return;
     }
@@ -110,7 +161,7 @@ export function ReportForm({
       onSubmit={handleSubmit}
       className="rounded-2xl border border-zinc-800 bg-zinc-900/80 p-5 shadow-xl"
     >
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-3 flex items-center justify-between">
         <h2 className="text-base font-semibold text-white">
           Broadcast Field Report
         </h2>
@@ -120,6 +171,27 @@ export function ReportForm({
         </span>
       </div>
 
+      {/* One-Tap Emergency Presets */}
+      <div className="mb-4">
+        <span className="mb-1.5 inline-flex items-center gap-1 text-[11px] font-medium uppercase tracking-wider text-zinc-400">
+          <Zap className="h-3 w-3 text-amber-400" />
+          Quick-Tap Presets
+        </span>
+        <div className="flex flex-wrap gap-1.5">
+          {QUICK_PRESETS.map((preset) => (
+            <button
+              key={preset.label}
+              type="button"
+              onClick={() => applyPreset(preset)}
+              className="rounded-lg border border-zinc-700/80 bg-zinc-950 px-2.5 py-1 text-xs text-zinc-300 transition hover:border-red-500/60 hover:text-white"
+            >
+              {preset.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Need vs Offer Toggle */}
       <div className="mb-4 grid grid-cols-2 gap-2 rounded-xl bg-zinc-950 p-1">
         <button
           type="button"
@@ -145,6 +217,7 @@ export function ReportForm({
         </button>
       </div>
 
+      {/* Category & Urgency */}
       <div className="mb-3 grid grid-cols-2 gap-3">
         <div>
           <label className="mb-1 block text-xs text-zinc-400">Category</label>
@@ -173,6 +246,7 @@ export function ReportForm({
         </div>
       </div>
 
+      {/* Headline */}
       <div className="mb-3">
         <label className="mb-1 block text-xs text-zinc-400">
           Short Headline *
@@ -192,6 +266,7 @@ export function ReportForm({
         />
       </div>
 
+      {/* Landmark & GPS */}
       <div className="mb-3">
         <label className="mb-1 block text-xs text-zinc-400">
           Neighborhood / Exact Landmark *
@@ -245,6 +320,7 @@ export function ReportForm({
         )}
       </div>
 
+      {/* Details */}
       <div className="mb-3">
         <label className="mb-1 block text-xs text-zinc-400">
           Specific Quantities / Situation Notes
@@ -259,6 +335,7 @@ export function ReportForm({
         />
       </div>
 
+      {/* Contact & Auto-Expiry */}
       <div className="mb-4 grid grid-cols-2 gap-3">
         <div>
           <label className="mb-1 block text-xs text-zinc-400">

@@ -22,9 +22,21 @@ export interface BeaconReport {
   createdAt: number;
   expiresAt: number;
   verifications: number;
+  resolved?: boolean;
   powNonce: string;
   powHash: string;
   distanceKm?: number;
+}
+
+export interface DecodedCompactBeacon {
+  kind: ReportKind;
+  category: ReportCategory;
+  urgency: UrgencyLevel;
+  title: string;
+  landmark: string;
+  contact: string;
+  lat: number;
+  lng: number;
 }
 
 export interface CreateReportPayload {

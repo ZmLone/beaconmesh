@@ -11,21 +11,25 @@ const memoryStore =
   globalForMemory.__beaconMemoryStore ?? new Map<string, BeaconReport>();
 globalForMemory.__beaconMemoryStore = memoryStore;
 
-function getRedisClient(): Redis | null {
-  if (
-    process.env.UPSTASH_REDIS_REST_URL &&
-    process.env.UPSTASH_REDIS_REST_TOKEN
-  ) {
-    return Redis.fromEnv();
+function getRedisCredentials(): { url: string; token: string } | null {
+  const url =
+    process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL || "";
+  const token =
+    process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN || "";
+  if (url && token) {
+    return { url, token };
   }
   return null;
 }
 
+function getRedisClient(): Redis | null {
+  const creds = getRedisCredentials();
+  if (!creds) return null;
+  return new Redis({ url: creds.url, token: creds.token });
+}
+
 export function isPersistentBackend(): boolean {
-  return Boolean(
-    process.env.UPSTASH_REDIS_REST_URL &&
-      process.env.UPSTASH_REDIS_REST_TOKEN
-  );
+  return Boolean(getRedisCredentials());
 }
 
 export async function saveReport(report: BeaconReport): Promise<void> {
@@ -113,6 +117,36 @@ export async function incrementVerification(
   const updated: BeaconReport = {
     ...existing,
     verifications: existing.verifications + 1
+  };
+  memoryStore.set(id, updated);
+  return updated;
+}
+
+export async function markReportResolved(
+  id: string
+): Promise<BeaconReport | null> {
+  const redis = getRedisClient();
+
+  if (redis) {
+    const key = `${REPORT_KEY_PREFIX}${id}`;
+    const report = await redis.get<BeaconReport>(key);
+    if (!report || report.expiresAt <= Date.now()) return null;
+
+    const updated: BeaconReport = {
+      ...report,
+      resolved: true
+    };
+    // Keep resolved badge visible for 30 minutes so responders know it is closed, then expire
+    await redis.set(key, updated, { ex: 1800 });
+    return updated;
+  }
+
+  const existing = memoryStore.get(id);
+  if (!existing || existing.expiresAt <= Date.now()) return null;
+  const updated: BeaconReport = {
+    ...existing,
+    resolved: true,
+    expiresAt: Math.min(existing.expiresAt, Date.now() + 30 * 60 * 1000)
   };
   memoryStore.set(id, updated);
   return updated;
