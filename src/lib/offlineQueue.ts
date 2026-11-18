@@ -1,6 +1,6 @@
 import type { CreateReportPayload } from "@/types/beacon";
 
-const QUEUE_KEY = "beaconmesh_offline_outbox_v1";
+const QUEUE_KEY = "beaconmesh_offline_outbox_v2";
 
 export function getQueuedReports(): CreateReportPayload[] {
   if (typeof window === "undefined") return [];

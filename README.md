@@ -1,11 +1,13 @@
-# BeaconMesh v3 — High-Stress Emergency Mutual Aid UI
+# BeaconMesh v4 (Final Production Release)
 
-Calm, distraction-free, high-contrast neighborhood emergency ledger built for mobile devices during blackouts, floods, earthquakes, and local crises.
+Production-grade, mobile-first civic & emergency mutual aid platform designed for instant community coordination during disasters, medical emergencies, blood shortages, and infrastructure outages.
 
-## New in v3
-- **2-Tab Mobile-First Layout:** Switch cleanly between `Live Nearby Feed` and `+ Post Alert` without scrolling past long forms.
-- **3-Step Guided Alert Flow:** Step 1 (Need vs Offer + Category Tile) -> Step 2 (Auto-GPS Lock) -> Step 3 (Headline, Landmark, Phone & Broadcast).
-- **Urgent Dispatch Pinned Strip:** Critical life-safety alerts stay pinned at the top of the feed.
-- **One-Tap Call & Directions:** Automatically extracts phone numbers into direct `tel:` Call buttons alongside Google Maps Directions.
-- **High-Contrast Daylight / Night Mode:** Switch between sunlight-readable white/black high-contrast mode and low-glare dark mode.
-- **Clean Header + `?` Info Modal:** Technical badges moved to a subtle footer status dot so citizens only see life-safety actions.
+## Complete v4 Feature Suite
+- **Polished Mobile-First App Shell:** Fixed safe-area bottom navigation bar (`Feed`, `Map`, `+ Post`, `SOS`, `Tools`), clean centered desktop container, and Sunlight/Night high-contrast mode.
+- **Interactive OpenStreetMap Live Radar:** Zero-API-key visual map showing color-coded Need/Offer pins and user GPS position alongside the fast triage feed.
+- **Granular Emergency Categories & Blood Group Triage:** Dedicated badges for `Blood Needed (A+/O-/etc.)`, `Medical & Oxygen`, `Water & Food`, `Rescue / Trapped`, `Shelter & Power`, `Road & Hazard`, and `I Am Safe Check-In`.
+- **Client-Side Image Compression (~40 KB):** Attach on-ground photos (flooded road, prescription, damaged bridge) compressed locally in the browser for 2G/3G networks.
+- **Responder Coordination & Live Status Thread:** `"I'm Heading There"` responder counter, real-time status updates/comments on every alert, `"Mark Resolved"`, and community `"Flag Outdated"` auto-hide (3 flags).
+- **One-Tap Call, WhatsApp & Directions:** Direct `tel:`, `wa.me` pre-filled message, and Google Maps navigation buttons on every card.
+- **Official Emergency Helplines Drawer (`SOS`):** Instant one-tap calling for National Emergency (112), Ambulance (108/102), Fire (101), Police (100), Disaster Control (1070), and Women/Child Helplines.
+- **Viral Growth & Offline Resilience:** Deep-link WhatsApp alert sharing (`/?alert=ID`), printable Neighborhood QR Poster generator, offline outbox auto-sync, and SMS compact relay decoder (`/?b=...`).

@@ -48,23 +48,23 @@ export function OfflineBanner({ onSynced }: OfflineBannerProps) {
   if (isOnline && queuedCount === 0 && !syncMessage) return null;
 
   return (
-    <div className="mb-4 rounded-xl border-2 border-amber-500 bg-amber-950 px-4 py-3 text-sm font-medium text-amber-100">
+    <div className="mb-3 rounded-xl border border-amber-500/40 bg-amber-950/90 px-3.5 py-2.5 text-xs font-medium text-amber-100 shadow-sm">
       {!isOnline ? (
-        <div className="flex items-center gap-2.5">
-          <WifiOff className="h-5 w-5 shrink-0 text-amber-400" />
+        <div className="flex items-center gap-2">
+          <WifiOff className="h-4 w-4 shrink-0 text-amber-400" />
           <span>
-            Offline Mode ({queuedCount} queued) — Alerts save on your device
-            and auto-send when signal returns.
+            Offline Mode ({queuedCount} queued) — Alerts save locally and
+            auto-send when signal returns.
           </span>
         </div>
       ) : syncMessage ? (
-        <div className="flex items-center gap-2.5 text-emerald-300">
-          <CheckCircle2 className="h-5 w-5 shrink-0" />
+        <div className="flex items-center gap-2 text-emerald-300">
+          <CheckCircle2 className="h-4 w-4 shrink-0" />
           <span>{syncMessage}</span>
         </div>
       ) : (
-        <div className="flex items-center justify-between gap-3">
-          <span>{queuedCount} offline alert(s) waiting to send.</span>
+        <div className="flex items-center justify-between gap-2">
+          <span>{queuedCount} offline alert(s) ready to sync.</span>
           <button
             type="button"
             onClick={async () => {
@@ -72,10 +72,10 @@ export function OfflineBanner({ onSynced }: OfflineBannerProps) {
               setQueuedCount(getQueuedReports().length);
               onSynced();
             }}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-bold text-zinc-950"
+            className="inline-flex items-center gap-1 rounded-lg bg-amber-500 px-2.5 py-1 text-xs font-bold text-zinc-950"
           >
-            <RefreshCw className="h-3.5 w-3.5" />
-            Sync Now
+            <RefreshCw className="h-3 w-3" />
+            Sync
           </button>
         </div>
       )}

@@ -1,8 +1,9 @@
 import { Redis } from "@upstash/redis";
-import type { BeaconReport } from "@/types/beacon";
+import type { BeaconReport, ReportUpdate } from "@/types/beacon";
 
 const REPORTS_SET_KEY = "beaconmesh:active_ids";
 const REPORT_KEY_PREFIX = "beaconmesh:report:";
+const AUTO_HIDE_FLAGS_THRESHOLD = 3;
 
 const globalForMemory = globalThis as unknown as {
   __beaconMemoryStore?: Map<string, BeaconReport>;
@@ -30,6 +31,15 @@ function getRedisClient(): Redis | null {
 
 export function isPersistentBackend(): boolean {
   return Boolean(getRedisCredentials());
+}
+
+function normalizeReport(raw: BeaconReport): BeaconReport {
+  return {
+    ...raw,
+    respondersCount: raw.respondersCount ?? 0,
+    flagsCount: raw.flagsCount ?? 0,
+    updates: Array.isArray(raw.updates) ? raw.updates : []
+  };
 }
 
 export async function saveReport(report: BeaconReport): Promise<void> {
@@ -65,10 +75,14 @@ export async function listActiveReports(): Promise<BeaconReport[]> {
     const expiredIds: string[] = [];
 
     records.forEach((rec, idx) => {
-      if (!rec || rec.expiresAt <= now) {
+      if (
+        !rec ||
+        rec.expiresAt <= now ||
+        (rec.flagsCount ?? 0) >= AUTO_HIDE_FLAGS_THRESHOLD
+      ) {
         expiredIds.push(ids[idx]);
       } else {
-        active.push(rec);
+        active.push(normalizeReport(rec));
       }
     });
 
@@ -81,32 +95,39 @@ export async function listActiveReports(): Promise<BeaconReport[]> {
 
   const active: BeaconReport[] = [];
   for (const [id, report] of memoryStore.entries()) {
-    if (report.expiresAt <= now) {
+    if (
+      report.expiresAt <= now ||
+      (report.flagsCount ?? 0) >= AUTO_HIDE_FLAGS_THRESHOLD
+    ) {
       memoryStore.delete(id);
     } else {
-      active.push(report);
+      active.push(normalizeReport(report));
     }
   }
   return active;
 }
 
-export async function incrementVerification(
-  id: string
+export async function mutateReport(
+  id: string,
+  mutator: (current: BeaconReport) => BeaconReport | null
 ): Promise<BeaconReport | null> {
   const redis = getRedisClient();
 
   if (redis) {
     const key = `${REPORT_KEY_PREFIX}${id}`;
-    const report = await redis.get<BeaconReport>(key);
-    if (!report || report.expiresAt <= Date.now()) return null;
+    const raw = await redis.get<BeaconReport>(key);
+    if (!raw || raw.expiresAt <= Date.now()) return null;
 
-    const updated: BeaconReport = {
-      ...report,
-      verifications: report.verifications + 1
-    };
+    const updated = mutator(normalizeReport(raw));
+    if (!updated) {
+      await redis.del(key);
+      await redis.srem(REPORTS_SET_KEY, id);
+      return null;
+    }
+
     const remainingTtl = Math.max(
       60,
-      Math.floor((report.expiresAt - Date.now()) / 1000)
+      Math.floor((updated.expiresAt - Date.now()) / 1000)
     );
     await redis.set(key, updated, { ex: remainingTtl });
     return updated;
@@ -114,39 +135,29 @@ export async function incrementVerification(
 
   const existing = memoryStore.get(id);
   if (!existing || existing.expiresAt <= Date.now()) return null;
-  const updated: BeaconReport = {
-    ...existing,
-    verifications: existing.verifications + 1
-  };
+  const updated = mutator(normalizeReport(existing));
+  if (!updated) {
+    memoryStore.delete(id);
+    return null;
+  }
   memoryStore.set(id, updated);
   return updated;
 }
 
-export async function markReportResolved(
-  id: string
+export async function appendReportUpdate(
+  id: string,
+  author: string,
+  text: string
 ): Promise<BeaconReport | null> {
-  const redis = getRedisClient();
-
-  if (redis) {
-    const key = `${REPORT_KEY_PREFIX}${id}`;
-    const report = await redis.get<BeaconReport>(key);
-    if (!report || report.expiresAt <= Date.now()) return null;
-
-    const updated: BeaconReport = {
-      ...report,
-      resolved: true
-    };
-    await redis.set(key, updated, { ex: 1800 });
-    return updated;
-  }
-
-  const existing = memoryStore.get(id);
-  if (!existing || existing.expiresAt <= Date.now()) return null;
-  const updated: BeaconReport = {
-    ...existing,
-    resolved: true,
-    expiresAt: Math.min(existing.expiresAt, Date.now() + 30 * 60 * 1000)
+  const newUpdate: ReportUpdate = {
+    id: crypto.randomUUID(),
+    author: author.trim().slice(0, 40) || "Neighbor",
+    text: text.trim().slice(0, 240),
+    createdAt: Date.now()
   };
-  memoryStore.set(id, updated);
-  return updated;
+
+  return mutateReport(id, (current) => ({
+    ...current,
+    updates: [...current.updates.slice(-19), newUpdate]
+  }));
 }

@@ -14,14 +14,18 @@ import type {
   UrgencyLevel
 } from "@/types/beacon";
 
-const VALID_KINDS: ReportKind[] = ["need", "offer"];
+const VALID_KINDS: ReportKind[] = ["need", "offer", "safe"];
 const VALID_CATEGORIES: ReportCategory[] = [
+  "blood",
   "medical",
   "water_food",
+  "rescue",
   "shelter",
-  "hazard"
+  "hazard",
+  "checkin"
 ];
 const VALID_URGENCIES: UrgencyLevel[] = ["critical", "high", "moderate"];
+const MAX_PHOTO_DATA_URL_LEN = 180_000; // ~130 KB compressed JPEG cap
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -29,10 +33,11 @@ export async function GET(request: NextRequest) {
   const lngParam = searchParams.get("lng");
   const radiusKm = Math.min(
     500,
-    Math.max(1, Number(searchParams.get("radiusKm") || 25))
+    Math.max(1, Number(searchParams.get("radiusKm") || 50))
   );
   const kindFilter = searchParams.get("kind");
   const categoryFilter = searchParams.get("category");
+  const searchQuery = (searchParams.get("q") || "").trim().toLowerCase();
 
   const hasUserCoords =
     latParam !== null &&
@@ -49,6 +54,15 @@ export async function GET(request: NextRequest) {
   }
   if (categoryFilter && categoryFilter !== "all") {
     reports = reports.filter((r) => r.category === categoryFilter);
+  }
+  if (searchQuery) {
+    reports = reports.filter(
+      (r) =>
+        r.title.toLowerCase().includes(searchQuery) ||
+        r.landmark.toLowerCase().includes(searchQuery) ||
+        r.details.toLowerCase().includes(searchQuery) ||
+        (r.bloodGroup && r.bloodGroup.toLowerCase().includes(searchQuery))
+    );
   }
 
   if (hasUserCoords) {
@@ -107,13 +121,25 @@ export async function POST(request: NextRequest) {
     const details = String(body.details ?? "").trim().slice(0, 500);
     const contact = String(body.contact ?? "").trim().slice(0, 100);
     const landmark = String(body.landmark ?? "").trim().slice(0, 120);
+    const bloodGroup = body.bloodGroup
+      ? String(body.bloodGroup).trim().slice(0, 10)
+      : undefined;
     const lat = Number(body.lat);
     const lng = Number(body.lng);
     const ttlHours = Math.min(72, Math.max(1, Number(body.ttlHours ?? 12)));
 
+    let photoDataUrl: string | undefined;
+    if (
+      typeof body.photoDataUrl === "string" &&
+      body.photoDataUrl.startsWith("data:image/jpeg;base64,") &&
+      body.photoDataUrl.length <= MAX_PHOTO_DATA_URL_LEN
+    ) {
+      photoDataUrl = body.photoDataUrl;
+    }
+
     if (!title || !landmark || !isValidCoordinate(lat, lng)) {
       return NextResponse.json(
-        { error: "Title, landmark, and valid GPS coordinates are required." },
+        { error: "Headline, landmark, and valid GPS coordinates are required." },
         { status: 400 }
       );
     }
@@ -128,7 +154,7 @@ export async function POST(request: NextRequest) {
 
     if (!powCheck.valid) {
       return NextResponse.json(
-        { error: "Cryptographic anti-spam Proof-of-Work verification failed." },
+        { error: "Anti-spam verification failed. Please retry." },
         { status: 400 }
       );
     }
@@ -138,6 +164,7 @@ export async function POST(request: NextRequest) {
       id: crypto.randomUUID(),
       kind: body.kind,
       category: body.category,
+      bloodGroup,
       urgency: body.urgency,
       title,
       details,
@@ -145,10 +172,14 @@ export async function POST(request: NextRequest) {
       lat,
       lng,
       landmark,
+      photoDataUrl,
       createdAt: now,
       expiresAt: now + ttlHours * 60 * 60 * 1000,
       verifications: 1,
+      respondersCount: 0,
+      flagsCount: 0,
       resolved: false,
+      updates: [],
       powNonce: String(body.powNonce),
       powHash: powCheck.hash
     };

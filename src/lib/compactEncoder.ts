@@ -6,16 +6,19 @@ import type {
 } from "@/types/beacon";
 
 const VALID_CATEGORIES: ReportCategory[] = [
+  "blood",
   "medical",
   "water_food",
+  "rescue",
   "shelter",
-  "hazard"
+  "hazard",
+  "checkin"
 ];
 const VALID_URGENCIES: UrgencyLevel[] = ["critical", "high", "moderate"];
 
 export function encodeCompactBeacon(report: BeaconReport): string {
   const compact = [
-    report.kind === "need" ? "N" : "O",
+    report.kind === "need" ? "N" : report.kind === "offer" ? "O" : "S",
     report.category,
     report.urgency,
     report.title,
@@ -54,7 +57,7 @@ export function decodeCompactBeacon(encoded: string): DecodedCompactBeacon | nul
     if (!title || !Number.isFinite(lat) || !Number.isFinite(lng)) return null;
 
     return {
-      kind: kindCode === "O" ? "offer" : "need",
+      kind: kindCode === "O" ? "offer" : kindCode === "S" ? "safe" : "need",
       category,
       urgency,
       title,
@@ -68,8 +71,30 @@ export function decodeCompactBeacon(encoded: string): DecodedCompactBeacon | nul
   }
 }
 
+export function formatWhatsAppShareText(report: BeaconReport, originUrl: string): string {
+  const prefix =
+    report.kind === "need"
+      ? "🚨 *URGENT HELP NEEDED*"
+      : report.kind === "offer"
+      ? "🤝 *AID / RESOURCE AVAILABLE*"
+      : "✅ *SAFE CHECK-IN*";
+  const bloodTag = report.bloodGroup ? ` [Blood: ${report.bloodGroup}]` : "";
+  const deepLink = `${originUrl}/?alert=${encodeURIComponent(report.id)}`;
+  return `${prefix}${bloodTag}
+*${report.title}*
+📍 Location: ${report.landmark}
+📞 Contact: ${report.contact || "On-site"}
+🗺️ Map: https://maps.google.com/?q=${report.lat},${report.lng}
+🔗 Open & Respond on BeaconMesh: ${deepLink}`;
+}
+
 export function formatSmsFallbackText(report: BeaconReport, originUrl: string): string {
-  const tag = report.kind === "need" ? "[NEED]" : "[OFFER]";
+  const tag =
+    report.kind === "need"
+      ? "[NEED]"
+      : report.kind === "offer"
+      ? "[OFFER]"
+      : "[SAFE]";
   const code = encodeCompactBeacon(report);
-  return `${tag} ${report.title} (${report.category.toUpperCase()}) @ ${report.landmark} (${report.lat.toFixed(4)},${report.lng.toFixed(4)}). Contact: ${report.contact || "On-site"}. Ledger: ${originUrl}/?b=${encodeURIComponent(code)}`;
+  return `${tag} ${report.title} @ ${report.landmark} (${report.lat.toFixed(4)},${report.lng.toFixed(4)}). Tel: ${report.contact || "On-site"}. Link: ${originUrl}/?b=${encodeURIComponent(code)}`;
 }

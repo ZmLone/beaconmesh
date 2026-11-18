@@ -2,16 +2,17 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "BeaconMesh — Emergency Mutual Aid Ledger",
+  title: "BeaconMesh — Emergency & Mutual Aid Network",
   description:
-    "High-contrast, offline-first neighborhood ledger for urgent medical, water, shelter, and road hazard alerts.",
+    "Real-time, offline-resilient neighborhood platform for blood donors, clean water, medical aid, rescue, and road alerts.",
   manifest: "/manifest.json"
 };
 
 export const viewport: Viewport = {
   themeColor: "#dc2626",
   width: "device-width",
-  initialScale: 1
+  initialScale: 1,
+  viewportFit: "cover"
 };
 
 export default function RootLayout({

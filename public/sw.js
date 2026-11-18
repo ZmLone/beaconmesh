@@ -1,4 +1,4 @@
-const CACHE_NAME = "beaconmesh-shell-v3";
+const CACHE_NAME = "beaconmesh-shell-v4";
 const SHELL_ASSETS = ["/", "/manifest.json"];
 
 self.addEventListener("install", (event) => {

@@ -43,3 +43,9 @@ export function extractDialablePhone(contact: string): string | null {
   const cleaned = match[1].replace(/[\s\-().]/g, "");
   return cleaned.length >= 7 ? cleaned : null;
 }
+
+export function buildWhatsAppUrl(phone: string, alertTitle: string, shareUrl: string): string {
+  const digitsOnly = phone.replace(/[^0-9]/g, "");
+  const msg = `Hi, I saw your BeaconMesh alert: "${alertTitle}". How can I help? (${shareUrl})`;
+  return `https://wa.me/${digitsOnly}?text=${encodeURIComponent(msg)}`;
+}

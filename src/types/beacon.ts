@@ -1,17 +1,28 @@
-export type ReportKind = "need" | "offer";
+export type ReportKind = "need" | "offer" | "safe";
 
 export type ReportCategory =
+  | "blood"
   | "medical"
   | "water_food"
+  | "rescue"
   | "shelter"
-  | "hazard";
+  | "hazard"
+  | "checkin";
 
 export type UrgencyLevel = "critical" | "high" | "moderate";
+
+export interface ReportUpdate {
+  id: string;
+  author: string;
+  text: string;
+  createdAt: number;
+}
 
 export interface BeaconReport {
   id: string;
   kind: ReportKind;
   category: ReportCategory;
+  bloodGroup?: string;
   urgency: UrgencyLevel;
   title: string;
   details: string;
@@ -19,10 +30,14 @@ export interface BeaconReport {
   lat: number;
   lng: number;
   landmark: string;
+  photoDataUrl?: string;
   createdAt: number;
   expiresAt: number;
   verifications: number;
+  respondersCount: number;
+  flagsCount: number;
   resolved?: boolean;
+  updates: ReportUpdate[];
   powNonce: string;
   powHash: string;
   distanceKm?: number;
@@ -42,6 +57,7 @@ export interface DecodedCompactBeacon {
 export interface CreateReportPayload {
   kind: ReportKind;
   category: ReportCategory;
+  bloodGroup?: string;
   urgency: UrgencyLevel;
   title: string;
   details: string;
@@ -49,6 +65,7 @@ export interface CreateReportPayload {
   lat: number;
   lng: number;
   landmark: string;
+  photoDataUrl?: string;
   ttlHours: number;
   powNonce: string;
   powTimestamp: number;
